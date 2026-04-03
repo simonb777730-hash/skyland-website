@@ -1,0 +1,68 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skyland Checkout Complete</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page" id="checkout-success">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">Skyland</span>
+        </div>
+        <nav class="nav">
+          <a class="nav-pill" href="index.html">Home</a>
+          <a class="nav-pill is-active" href="store.html">Store</a>
+          <a class="nav-pill" href="info.html">Info</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="checkout">
+          <span class="section-pill">CHECKOUT</span>
+          <h2>Payment Complete</h2>
+          <p class="section-subtitle">Thanks for supporting Skyland! Your tier will be applied soon.</p>
+
+          <div class="checkout-card">
+            <div class="checkout-row">
+              <div>
+                <div class="checkout-label">Session</div>
+                <div class="checkout-tier" id="session-id">Processing...</div>
+              </div>
+            </div>
+
+            <div class="checkout-actions">
+              <a class="btn btn-primary" href="store.html">Back to Store</a>
+              <a class="btn btn-secondary" href="index.html">Go Home</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div>© 2026 Skyland — A Skyblock Adventure</div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="store.html">Store</a>
+          <a href="info.html">Info</a>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+      const sessionEl = document.getElementById("session-id");
+      sessionEl.textContent = sessionId ? sessionId : "No session id";
+    </script>
+  </body>
+</html>

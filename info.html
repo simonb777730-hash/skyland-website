@@ -1,0 +1,339 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skyland Info</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page" id="info">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">Skyland</span>
+        </div>
+        <nav class="nav">
+          <a class="nav-pill" href="index.html">Home</a>
+          <a class="nav-pill" href="store.html">Store</a>
+          <a class="nav-pill is-active" href="info.html">Info</a>
+          <button class="nav-pill nav-signin" id="signin-button" type="button">Sign In</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="info">
+          <span class="section-pill">SERVER INFO</span>
+          <h2>Server Status</h2>
+          <div class="status-grid">
+            <div class="status-card">
+              <span class="dot offline" id="status-dot"></span>
+              <span class="status-label">STATUS</span>
+              <strong id="status-value">Offline</strong>
+            </div>
+            <div class="status-card">
+              <span class="status-label">PLAYERS ONLINE</span>
+              <strong id="players-value">0 / 100</strong>
+            </div>
+            <div class="status-card">
+              <span class="status-label">VERSION</span>
+              <strong id="version-value">Java 1.20+</strong>
+            </div>
+            <div class="status-card">
+              <span class="status-label">TOTAL PLAYERS</span>
+              <strong id="total-value">--</strong>
+            </div>
+          </div>
+
+          <div class="connect">
+            <div class="connect-header">How to Connect</div>
+            <p class="connect-subtitle">Follow these steps to join Skyland for the first time.</p>
+            <div class="connect-grid">
+              <div class="connect-step">
+                <div class="step-number">1</div>
+                <div>
+                  <strong>Download Minecraft Java</strong>
+                  <p>Make sure you have Minecraft Java Edition 1.21.11.</p>
+                </div>
+              </div>
+              <div class="connect-step">
+                <div class="step-number">2</div>
+                <div>
+                  <strong>Open Multiplayer</strong>
+                  <p>From the main menu, click “Multiplayer”, then “Add Server”.</p>
+                </div>
+              </div>
+              <div class="connect-step">
+                <div class="step-number">3</div>
+                <div>
+                  <strong>Enter Server Address</strong>
+                  <p>Type in the server address: play.mc-skyland.com</p>
+                </div>
+              </div>
+              <div class="connect-step">
+                <div class="step-number">4</div>
+                <div>
+                  <strong>Click Join Server</strong>
+                  <p>Hit “Done” then double-click Skyland to join.</p>
+                </div>
+              </div>
+            </div>
+            <div class="connect-bar">
+              <div>
+                <span class="connect-label">SERVER ADDRESS</span>
+                <span class="connect-value">play.mc-skyland.com</span>
+              </div>
+              <button class="btn btn-primary" id="copy-ip-2">Copy IP</button>
+            </div>
+          </div>
+
+          <div class="news">
+            <div class="news-header">News & Announcements</div>
+            <div class="news-card">
+              <p>No announcements yet. Check back soon!</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div>© 2026 Skyland — A Skyblock Adventure</div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="store.html">Store</a>
+          <a href="info.html">Info</a>
+        </div>
+      </footer>
+    </div>
+
+    <div class="signin-modal" id="signin-modal" aria-hidden="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Link Your Account</h3>
+          <button class="signin-close" id="signin-close" type="button">×</button>
+        </div>
+        <p class="signin-subtitle">Enter your Minecraft name, then confirm the code in game.</p>
+        <label class="signin-field">
+          <span>Minecraft Username</span>
+          <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+        </label>
+        <button class="btn btn-secondary" id="signin-send" type="button">Send Code</button>
+        <label class="signin-field">
+          <span>Verification Code</span>
+          <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+        </label>
+        <button class="btn btn-primary" id="signin-verify" type="button">Verify</button>
+        <div class="signin-status" id="signin-status"></div>
+      </div>
+    </div>
+
+    <script>
+      const COPY_IP = "play.mc-skyland.com";
+      const copyButton = document.getElementById("copy-ip-2");
+
+      function flashCopied(button) {
+        if (!button) {
+          return;
+        }
+        const original = button.textContent;
+        button.textContent = "Copied!";
+        setTimeout(() => {
+          button.textContent = original;
+        }, 1500);
+      }
+
+      function fallbackCopyText(text) {
+        let success = false;
+        try {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.top = "-1000px";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          success = document.execCommand("copy");
+          document.body.removeChild(textarea);
+        } catch (error) {
+          success = false;
+        }
+        if (!success) {
+          window.prompt("Copy this IP:", text);
+        }
+        return success;
+      }
+
+      if (copyButton) {
+        copyButton.addEventListener("click", () => {
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard
+              .writeText(COPY_IP)
+              .then(() => flashCopied(copyButton))
+              .catch(() => {
+                fallbackCopyText(COPY_IP);
+                flashCopied(copyButton);
+              });
+          } else {
+            fallbackCopyText(COPY_IP);
+            flashCopied(copyButton);
+          }
+        });
+      }
+
+      const statusUrl = "/skyland-status.json";
+      const statusDot = document.getElementById("status-dot");
+      const statusValue = document.getElementById("status-value");
+      const playersValue = document.getElementById("players-value");
+      const versionValue = document.getElementById("version-value");
+      const totalValue = document.getElementById("total-value");
+
+      fetch(statusUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          const status = (data.status || "").toLowerCase() === "online" ? "Online" : "Offline";
+          statusValue.textContent = status;
+          statusDot.classList.toggle("online", status === "Online");
+          statusDot.classList.toggle("offline", status !== "Online");
+          if (typeof data.playersOnline === "number" && typeof data.maxPlayers === "number") {
+            playersValue.textContent = `${data.playersOnline} / ${data.maxPlayers}`;
+          }
+          if (data.version) {
+            versionValue.textContent = `Java ${data.version}`;
+          }
+          if (typeof data.totalPlayers === "number") {
+            totalValue.textContent = data.totalPlayers.toLocaleString();
+          }
+        })
+        .catch(() => {
+          statusValue.textContent = "Offline";
+          statusDot.classList.remove("online");
+          statusDot.classList.add("offline");
+        });
+
+      const AUTH_REQUEST_URL = "/skyland-auth/request";
+      const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
+      const signinButton = document.getElementById("signin-button");
+      const signinModal = document.getElementById("signin-modal");
+      const signinClose = document.getElementById("signin-close");
+      const signinSend = document.getElementById("signin-send");
+      const signinVerify = document.getElementById("signin-verify");
+      const signinStatus = document.getElementById("signin-status");
+      const signinUsername = document.getElementById("signin-username");
+      const signinCode = document.getElementById("signin-code");
+
+      function loadAuth() {
+        const raw = localStorage.getItem("skylandAuthUser");
+        if (!raw) {
+          return null;
+        }
+        try {
+          return JSON.parse(raw);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function updateSigninLabel() {
+        const auth = loadAuth();
+        if (auth && auth.username) {
+          signinButton.textContent = auth.username;
+        } else {
+          signinButton.textContent = "Sign In";
+        }
+      }
+
+      function openSignin() {
+        signinModal.classList.add("is-open");
+        signinModal.setAttribute("aria-hidden", "false");
+        signinStatus.textContent = "";
+        signinUsername.focus();
+      }
+
+      function closeSignin() {
+        signinModal.classList.remove("is-open");
+        signinModal.setAttribute("aria-hidden", "true");
+      }
+
+      signinButton.addEventListener("click", openSignin);
+      signinClose.addEventListener("click", closeSignin);
+      signinModal.addEventListener("click", (event) => {
+        if (event.target === signinModal) {
+          closeSignin();
+        }
+      });
+
+      signinSend.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        signinStatus.textContent = "";
+        if (!username) {
+          signinStatus.textContent = "Enter your Minecraft username.";
+          return;
+        }
+        signinSend.disabled = true;
+        signinSend.textContent = "Sending...";
+        try {
+          const response = await fetch(AUTH_REQUEST_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Could not send code.");
+          }
+          signinStatus.textContent = "Code sent in-game. Check your chat.";
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinSend.disabled = false;
+          signinSend.textContent = "Send Code";
+        }
+      });
+
+      signinVerify.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        const code = signinCode.value.trim();
+        signinStatus.textContent = "";
+        if (!username || !code) {
+          signinStatus.textContent = "Enter your username and code.";
+          return;
+        }
+        signinVerify.disabled = true;
+        signinVerify.textContent = "Verifying...";
+        try {
+          const response = await fetch(AUTH_CONFIRM_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, code })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Verification failed.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid
+          }));
+          updateSigninLabel();
+          signinStatus.textContent = "Account linked!";
+          setTimeout(closeSignin, 900);
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinVerify.disabled = false;
+          signinVerify.textContent = "Verify";
+        }
+      });
+
+      updateSigninLabel();
+    </script>
+  </body>
+</html>
+

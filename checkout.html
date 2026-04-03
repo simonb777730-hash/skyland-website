@@ -1,0 +1,295 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skyland Checkout</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page" id="checkout">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">Skyland</span>
+        </div>
+        <nav class="nav">
+          <a class="nav-pill" href="index.html">Home</a>
+          <a class="nav-pill is-active" href="store.html">Store</a>
+          <a class="nav-pill" href="info.html">Info</a>
+          <button class="nav-pill nav-signin" id="signin-button" type="button">Sign In</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="checkout">
+          <span class="section-pill">CHECKOUT</span>
+          <h2>Complete Your Tier</h2>
+          <p class="section-subtitle">Secure checkout powered by Stripe.</p>
+
+          <div class="checkout-card">
+            <div class="checkout-row">
+              <div>
+                <div class="checkout-label">Selected Tier</div>
+                <div class="checkout-tier" id="checkout-tier">No tier selected</div>
+                <div class="checkout-price" id="checkout-price">Select a tier from the store.</div>
+              </div>
+              <a class="btn btn-secondary" href="store.html">Change</a>
+            </div>
+
+            <label class="checkout-field">
+              <span>Minecraft Username</span>
+              <input
+                id="checkout-username"
+                class="checkout-input"
+                type="text"
+                placeholder="Your in-game name"
+                autocomplete="off"
+              />
+            </label>
+
+            <div class="checkout-actions">
+              <button class="btn btn-primary" id="checkout-submit">Proceed to Stripe</button>
+              <a class="btn btn-secondary" href="store.html">Back to Store</a>
+            </div>
+
+            <p class="checkout-note">All tiers are monthly subscriptions.</p>
+            <div class="checkout-error" id="checkout-error"></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div>© 2026 Skyland — A Skyblock Adventure</div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="store.html">Store</a>
+          <a href="info.html">Info</a>
+        </div>
+      </footer>
+    </div>
+
+    <div class="signin-modal" id="signin-modal" aria-hidden="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Link Your Account</h3>
+          <button class="signin-close" id="signin-close" type="button">×</button>
+        </div>
+        <p class="signin-subtitle">Enter your Minecraft name, then confirm the code in game.</p>
+        <label class="signin-field">
+          <span>Minecraft Username</span>
+          <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+        </label>
+        <button class="btn btn-secondary" id="signin-send" type="button">Send Code</button>
+        <label class="signin-field">
+          <span>Verification Code</span>
+          <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+        </label>
+        <button class="btn btn-primary" id="signin-verify" type="button">Verify</button>
+        <div class="signin-status" id="signin-status"></div>
+      </div>
+    </div>
+
+    <script>
+      const CHECKOUT_URL = "/skyland-checkout";
+      const tiers = {
+        t2: { name: "Uncommon Tier", price: "$1 / month" },
+        t3: { name: "Rare Tier", price: "$2 / month" },
+        t4: { name: "Epic Tier", price: "$3 / month" },
+        t5: { name: "Legendary Tier", price: "$4 / month" },
+        t6: { name: "Mythic Tier", price: "$5 / month" },
+        t7: { name: "Devine Tier", price: "$6 / month" }
+      };
+
+      const tierText = document.getElementById("checkout-tier");
+      const priceText = document.getElementById("checkout-price");
+      const errorBox = document.getElementById("checkout-error");
+      const submitBtn = document.getElementById("checkout-submit");
+
+      const params = new URLSearchParams(window.location.search);
+      let selectedTier = localStorage.getItem("skylandTier") || params.get("tier");
+      const savedAuth = localStorage.getItem("skylandAuthUser");
+      if (savedAuth) {
+        try {
+          const auth = JSON.parse(savedAuth);
+          if (auth && auth.username) {
+            document.getElementById("checkout-username").value = auth.username;
+          }
+        } catch (error) {
+          // ignore parse errors
+        }
+      }
+
+      function renderTier() {
+        if (!selectedTier || !tiers[selectedTier]) {
+          tierText.textContent = "No tier selected";
+          priceText.textContent = "Select a tier from the store.";
+          submitBtn.disabled = true;
+          submitBtn.classList.add("is-disabled");
+          return;
+        }
+        const tier = tiers[selectedTier];
+        tierText.textContent = `${tier.name} (${selectedTier.toUpperCase()})`;
+        priceText.textContent = tier.price;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("is-disabled");
+      }
+
+      renderTier();
+
+      async function startCheckout() {
+        errorBox.textContent = "";
+        if (!selectedTier || !tiers[selectedTier]) {
+          errorBox.textContent = "Please pick a tier from the store first.";
+          return;
+        }
+        const username = document.getElementById("checkout-username").value.trim();
+        try {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Starting checkout...";
+          const response = await fetch(CHECKOUT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ tierId: selectedTier, username })
+          });
+          const data = await response.json();
+          if (!response.ok || !data.url) {
+            throw new Error(data.error || "Checkout failed");
+          }
+          window.location.href = data.url;
+        } catch (error) {
+          errorBox.textContent = error.message;
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Proceed to Stripe";
+        }
+      }
+
+      submitBtn.addEventListener("click", startCheckout);
+
+      const AUTH_REQUEST_URL = "/skyland-auth/request";
+      const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
+      const signinButton = document.getElementById("signin-button");
+      const signinModal = document.getElementById("signin-modal");
+      const signinClose = document.getElementById("signin-close");
+      const signinSend = document.getElementById("signin-send");
+      const signinVerify = document.getElementById("signin-verify");
+      const signinStatus = document.getElementById("signin-status");
+      const signinUsername = document.getElementById("signin-username");
+      const signinCode = document.getElementById("signin-code");
+
+      function loadAuth() {
+        const raw = localStorage.getItem("skylandAuthUser");
+        if (!raw) {
+          return null;
+        }
+        try {
+          return JSON.parse(raw);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function updateSigninLabel() {
+        const auth = loadAuth();
+        if (auth && auth.username) {
+          signinButton.textContent = auth.username;
+        } else {
+          signinButton.textContent = "Sign In";
+        }
+      }
+
+      function openSignin() {
+        signinModal.classList.add("is-open");
+        signinModal.setAttribute("aria-hidden", "false");
+        signinStatus.textContent = "";
+        signinUsername.focus();
+      }
+
+      function closeSignin() {
+        signinModal.classList.remove("is-open");
+        signinModal.setAttribute("aria-hidden", "true");
+      }
+
+      signinButton.addEventListener("click", openSignin);
+      signinClose.addEventListener("click", closeSignin);
+      signinModal.addEventListener("click", (event) => {
+        if (event.target === signinModal) {
+          closeSignin();
+        }
+      });
+
+      signinSend.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        signinStatus.textContent = "";
+        if (!username) {
+          signinStatus.textContent = "Enter your Minecraft username.";
+          return;
+        }
+        signinSend.disabled = true;
+        signinSend.textContent = "Sending...";
+        try {
+          const response = await fetch(AUTH_REQUEST_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Could not send code.");
+          }
+          signinStatus.textContent = "Code sent in-game. Check your chat.";
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinSend.disabled = false;
+          signinSend.textContent = "Send Code";
+        }
+      });
+
+      signinVerify.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        const code = signinCode.value.trim();
+        signinStatus.textContent = "";
+        if (!username || !code) {
+          signinStatus.textContent = "Enter your username and code.";
+          return;
+        }
+        signinVerify.disabled = true;
+        signinVerify.textContent = "Verifying...";
+        try {
+          const response = await fetch(AUTH_CONFIRM_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, code })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Verification failed.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid
+          }));
+          updateSigninLabel();
+          signinStatus.textContent = "Account linked!";
+          setTimeout(closeSignin, 900);
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinVerify.disabled = false;
+          signinVerify.textContent = "Verify";
+        }
+      });
+
+      updateSigninLabel();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,275 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skyland</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page" id="home">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">Skyland</span>
+        </div>
+        <nav class="nav">
+          <a class="nav-pill is-active" href="index.html">Home</a>
+          <a class="nav-pill" href="store.html">Store</a>
+          <a class="nav-pill" href="info.html">Info</a>
+          <button class="nav-pill nav-signin" id="signin-button" type="button">Sign In</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <span class="section-pill">SKYBLOCK ADVENTURE</span>
+          <h1 class="hero-title">Welcome to<br /><span>Skyland</span></h1>
+          <p class="hero-subtitle">
+            Build your island from nothing. Rise through the clouds.<br />
+            Conquer the sky.
+          </p>
+          <div class="ip-pill">
+            <span class="ip-label">SERVER IP</span>
+            <span class="ip-value" id="server-ip">play.mc-skyland.com</span>
+            <button class="ip-copy" id="copy-ip">Copy</button>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="store.html">Visit Store</a>
+            <a class="btn btn-secondary" href="info.html">Server Info</a>
+          </div>
+          <div class="island">
+            <svg viewBox="0 0 240 140" aria-hidden="true">
+              <defs>
+                <linearGradient id="grass" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#64d26f" />
+                  <stop offset="100%" stop-color="#2a8b4a" />
+                </linearGradient>
+                <linearGradient id="dirt" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#5a3b1c" />
+                  <stop offset="100%" stop-color="#3b2513" />
+                </linearGradient>
+              </defs>
+              <ellipse cx="120" cy="55" rx="70" ry="26" fill="url(#grass)" />
+              <ellipse cx="120" cy="82" rx="54" ry="18" fill="url(#dirt)" />
+              <circle cx="80" cy="40" r="10" fill="#2e7d32" />
+              <circle cx="106" cy="34" r="12" fill="#2e7d32" />
+              <circle cx="146" cy="38" r="9" fill="#2e7d32" />
+              <rect x="158" y="40" width="4" height="24" fill="#3a2b1b" />
+              <rect x="158" y="60" width="6" height="10" fill="#4aa7ff" rx="3" />
+            </svg>
+          </div>
+        </section>
+</main>
+
+      <footer class="footer">
+        <div>© 2026 Skyland — A Skyblock Adventure</div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="store.html">Store</a>
+          <a href="info.html">Info</a>
+        </div>
+      </footer>
+    </div>
+
+    <div class="signin-modal" id="signin-modal" aria-hidden="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Link Your Account</h3>
+          <button class="signin-close" id="signin-close" type="button">×</button>
+        </div>
+        <p class="signin-subtitle">Enter your Minecraft name, then confirm the code in game.</p>
+        <label class="signin-field">
+          <span>Minecraft Username</span>
+          <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+        </label>
+        <button class="btn btn-secondary" id="signin-send" type="button">Send Code</button>
+        <label class="signin-field">
+          <span>Verification Code</span>
+          <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+        </label>
+        <button class="btn btn-primary" id="signin-verify" type="button">Verify</button>
+        <div class="signin-status" id="signin-status"></div>
+      </div>
+    </div>
+
+    <script>
+      const COPY_IP = "play.mc-skyland.com";
+      const copyButton = document.getElementById("copy-ip");
+
+      function flashCopied(button) {
+        if (!button) {
+          return;
+        }
+        const original = button.textContent;
+        button.textContent = "Copied!";
+        setTimeout(() => {
+          button.textContent = original;
+        }, 1500);
+      }
+
+      function fallbackCopyText(text) {
+        let success = false;
+        try {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.top = "-1000px";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          success = document.execCommand("copy");
+          document.body.removeChild(textarea);
+        } catch (error) {
+          success = false;
+        }
+        if (!success) {
+          window.prompt("Copy this IP:", text);
+        }
+        return success;
+      }
+
+      if (copyButton) {
+        copyButton.addEventListener("click", () => {
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard
+              .writeText(COPY_IP)
+              .then(() => flashCopied(copyButton))
+              .catch(() => {
+                fallbackCopyText(COPY_IP);
+                flashCopied(copyButton);
+              });
+          } else {
+            fallbackCopyText(COPY_IP);
+            flashCopied(copyButton);
+          }
+        });
+      }
+
+      const AUTH_REQUEST_URL = "/skyland-auth/request";
+      const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
+      const signinButton = document.getElementById("signin-button");
+      const signinModal = document.getElementById("signin-modal");
+      const signinClose = document.getElementById("signin-close");
+      const signinSend = document.getElementById("signin-send");
+      const signinVerify = document.getElementById("signin-verify");
+      const signinStatus = document.getElementById("signin-status");
+      const signinUsername = document.getElementById("signin-username");
+      const signinCode = document.getElementById("signin-code");
+
+      function loadAuth() {
+        const raw = localStorage.getItem("skylandAuthUser");
+        if (!raw) {
+          return null;
+        }
+        try {
+          return JSON.parse(raw);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function updateSigninLabel() {
+        const auth = loadAuth();
+        if (auth && auth.username) {
+          signinButton.textContent = auth.username;
+        } else {
+          signinButton.textContent = "Sign In";
+        }
+      }
+
+      function openSignin() {
+        signinModal.classList.add("is-open");
+        signinModal.setAttribute("aria-hidden", "false");
+        signinStatus.textContent = "";
+        signinUsername.focus();
+      }
+
+      function closeSignin() {
+        signinModal.classList.remove("is-open");
+        signinModal.setAttribute("aria-hidden", "true");
+      }
+
+      signinButton.addEventListener("click", openSignin);
+      signinClose.addEventListener("click", closeSignin);
+      signinModal.addEventListener("click", (event) => {
+        if (event.target === signinModal) {
+          closeSignin();
+        }
+      });
+
+      signinSend.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        signinStatus.textContent = "";
+        if (!username) {
+          signinStatus.textContent = "Enter your Minecraft username.";
+          return;
+        }
+        signinSend.disabled = true;
+        signinSend.textContent = "Sending...";
+        try {
+          const response = await fetch(AUTH_REQUEST_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Could not send code.");
+          }
+          signinStatus.textContent = "Code sent in-game. Check your chat.";
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinSend.disabled = false;
+          signinSend.textContent = "Send Code";
+        }
+      });
+
+      signinVerify.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        const code = signinCode.value.trim();
+        signinStatus.textContent = "";
+        if (!username || !code) {
+          signinStatus.textContent = "Enter your username and code.";
+          return;
+        }
+        signinVerify.disabled = true;
+        signinVerify.textContent = "Verifying...";
+        try {
+          const response = await fetch(AUTH_CONFIRM_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, code })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Verification failed.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid
+          }));
+          updateSigninLabel();
+          signinStatus.textContent = "Account linked!";
+          setTimeout(closeSignin, 900);
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinVerify.disabled = false;
+          signinVerify.textContent = "Verify";
+        }
+      });
+
+      updateSigninLabel();
+    </script>
+  </body>
+</html>
+
