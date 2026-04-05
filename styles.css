@@ -311,6 +311,12 @@ main {
   opacity: 0.6;
 }
 
+.rank-button.is-locked {
+  cursor: pointer;
+  opacity: 0.55;
+  filter: grayscale(0.2);
+}
+
 .rank-button.blue {
   background: #4f8cff;
 }

@@ -147,16 +147,6 @@
 
     <script>
       const tierButtons = document.querySelectorAll(".rank-button[data-tier]");
-      tierButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const tier = button.dataset.tier;
-          if (!tier) {
-            return;
-          }
-          localStorage.setItem("skylandTier", tier);
-          window.location.href = "checkout.html";
-        });
-      });
 
       const AUTH_REQUEST_URL = "/skyland-auth/request";
       const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
@@ -179,6 +169,26 @@
         } catch (error) {
           return null;
         }
+      }
+
+      function isSignedIn() {
+        const auth = loadAuth();
+        return !!(auth && auth.username && auth.uuid);
+      }
+
+      function updateTierButtons() {
+        const signedIn = isSignedIn();
+        tierButtons.forEach((button) => {
+          if (signedIn) {
+            button.classList.remove("is-locked");
+            button.removeAttribute("title");
+            button.removeAttribute("aria-disabled");
+          } else {
+            button.classList.add("is-locked");
+            button.setAttribute("title", "Sign in to purchase this tier.");
+            button.setAttribute("aria-disabled", "true");
+          }
+        });
       }
 
       function updateSigninLabel() {
@@ -263,6 +273,7 @@
             uuid: data.uuid
           }));
           updateSigninLabel();
+          updateTierButtons();
           signinStatus.textContent = "Account linked!";
           setTimeout(closeSignin, 900);
         } catch (error) {
@@ -274,6 +285,23 @@
       });
 
       updateSigninLabel();
+      updateTierButtons();
+
+      tierButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (!isSignedIn()) {
+            signinStatus.textContent = "Sign in to purchase a tier.";
+            openSignin();
+            return;
+          }
+          const tier = button.dataset.tier;
+          if (!tier) {
+            return;
+          }
+          localStorage.setItem("skylandTier", tier);
+          window.location.href = "checkout.html";
+        });
+      });
     </script>
   </body>
 </html>
