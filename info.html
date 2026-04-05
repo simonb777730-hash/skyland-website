@@ -125,7 +125,16 @@
           <span>Minecraft Username</span>
           <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
         </label>
+        <label class="signin-field">
+          <span>Email (for account)</span>
+          <input id="signin-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
+        </label>
+        <label class="signin-field">
+          <span>Password</span>
+          <input id="signin-password" class="signin-input" type="password" autocomplete="off" placeholder="Create a password" />
+        </label>
         <button class="btn btn-secondary" id="signin-send" type="button">Send Code</button>
+        <button class="btn btn-secondary" id="signin-register" type="button">Register</button>
         <label class="signin-field">
           <span>Verification Code</span>
           <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
@@ -221,13 +230,17 @@
 
       const AUTH_REQUEST_URL = "/skyland-auth/request";
       const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
+      const AUTH_REGISTER_URL = "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
       const signinModal = document.getElementById("signin-modal");
       const signinClose = document.getElementById("signin-close");
       const signinSend = document.getElementById("signin-send");
+      const signinRegister = document.getElementById("signin-register");
       const signinVerify = document.getElementById("signin-verify");
       const signinStatus = document.getElementById("signin-status");
       const signinUsername = document.getElementById("signin-username");
+      const signinEmail = document.getElementById("signin-email");
+      const signinPassword = document.getElementById("signin-password");
       const signinCode = document.getElementById("signin-code");
 
       function loadAuth() {
@@ -296,6 +309,36 @@
         } finally {
           signinSend.disabled = false;
           signinSend.textContent = "Send Code";
+        }
+      });
+
+      signinRegister.addEventListener("click", async () => {
+        const username = signinUsername.value.trim();
+        const email = signinEmail.value.trim();
+        const password = signinPassword.value.trim();
+        signinStatus.textContent = "";
+        if (!username || !email || !password) {
+          signinStatus.textContent = "Enter username, email, and password to register.";
+          return;
+        }
+        signinRegister.disabled = true;
+        signinRegister.textContent = "Registering...";
+        try {
+          const response = await fetch(AUTH_REGISTER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Could not register.");
+          }
+          signinStatus.textContent = "Code sent in-game. Enter it below to verify.";
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinRegister.disabled = false;
+          signinRegister.textContent = "Register";
         }
       });
 
