@@ -64,6 +64,14 @@ main {
   box-shadow: 0 0 12px rgba(55, 226, 193, 0.8);
 }
 
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.25);
+}
+
 .brand-name {
   color: var(--accent);
   letter-spacing: 0.02em;
@@ -208,10 +216,10 @@ main {
   margin-top: 8px;
 }
 
-.island svg {
-  width: 170px;
-  height: 110px;
-  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.25));
+.hero-island {
+  width: min(320px, 70vw);
+  height: auto;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35));
 }
 
 .store {
