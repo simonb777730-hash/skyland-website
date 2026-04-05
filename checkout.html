@@ -123,6 +123,14 @@
       const errorBox = document.getElementById("checkout-error");
       const submitBtn = document.getElementById("checkout-submit");
 
+      async function readJsonSafe(response) {
+        try {
+          return await response.json();
+        } catch (error) {
+          return null;
+        }
+      }
+
       const params = new URLSearchParams(window.location.search);
       let selectedTier = localStorage.getItem("skylandTier") || params.get("tier");
       const savedAuth = localStorage.getItem("skylandAuthUser");
@@ -171,9 +179,9 @@
             },
             body: JSON.stringify({ tierId: selectedTier, username })
           });
-          const data = await response.json();
-          if (!response.ok || !data.url) {
-            throw new Error(data.error || "Checkout failed");
+          const data = await readJsonSafe(response);
+          if (!response.ok || !data || !data.url) {
+            throw new Error((data && data.error) || `Checkout failed (HTTP ${response.status}).`);
           }
           window.location.href = data.url;
         } catch (error) {
@@ -256,9 +264,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Could not send code.");
+            throw new Error((data && data.error) || `Could not send code (HTTP ${response.status}).`);
           }
           signinStatus.textContent = "Code sent in-game. Check your chat.";
         } catch (error) {
@@ -286,9 +294,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Could not register.");
+            throw new Error((data && data.error) || `Could not register (HTTP ${response.status}).`);
           }
           signinStatus.textContent = "Code sent in-game. Enter it below to verify.";
         } catch (error) {
@@ -315,9 +323,12 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, code })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Verification failed.");
+            throw new Error((data && data.error) || `Verification failed (HTTP ${response.status}).`);
+          }
+          if (!data) {
+            throw new Error("Verification failed: empty response.");
           }
           localStorage.setItem("skylandAuthUser", JSON.stringify({
             username: data.username,

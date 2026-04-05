@@ -255,6 +255,14 @@
         }
       }
 
+      async function readJsonSafe(response) {
+        try {
+          return await response.json();
+        } catch (error) {
+          return null;
+        }
+      }
+
       function updateSigninLabel() {
         const auth = loadAuth();
         if (auth && auth.username) {
@@ -299,9 +307,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Could not send code.");
+            throw new Error((data && data.error) || `Could not send code (HTTP ${response.status}).`);
           }
           signinStatus.textContent = "Code sent in-game. Check your chat.";
         } catch (error) {
@@ -329,9 +337,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Could not register.");
+            throw new Error((data && data.error) || `Could not register (HTTP ${response.status}).`);
           }
           signinStatus.textContent = "Code sent in-game. Enter it below to verify.";
         } catch (error) {
@@ -358,9 +366,12 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, code })
           });
-          const data = await response.json();
+          const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error(data.error || "Verification failed.");
+            throw new Error((data && data.error) || `Verification failed (HTTP ${response.status}).`);
+          }
+          if (!data) {
+            throw new Error("Verification failed: empty response.");
           }
           localStorage.setItem("skylandAuthUser", JSON.stringify({
             username: data.username,
