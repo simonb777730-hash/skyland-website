@@ -25,6 +25,7 @@
           <a class="nav-pill is-active" href="index.html">Home</a>
           <a class="nav-pill" href="store.html">Store</a>
           <a class="nav-pill" href="info.html">Info</a>
+          <button class="nav-pill nav-register" id="register-button" type="button">Register</button>
           <button class="nav-pill nav-signin" id="signin-button" type="button">Sign In</button>
         </nav>
       </header>
@@ -71,7 +72,7 @@
           <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
         </label>
         <label class="signin-field">
-          <span>Email (for account)</span>
+          <span>Email</span>
           <input id="signin-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
         </label>
         <label class="signin-field">
@@ -83,7 +84,7 @@
           <span>Link Code (from /link)</span>
           <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
         </label>
-        <button class="btn btn-primary" id="signin-verify" type="button">Verify</button>
+        <button class="btn btn-primary" id="signin-verify" type="button">Sign in</button>
         <div class="signin-status" id="signin-status"></div>
       </div>
     </div>
@@ -145,6 +146,7 @@
       const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
       const AUTH_REGISTER_URL = "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
+      const registerButton = document.getElementById("register-button");
       const signinModal = document.getElementById("signin-modal");
       const signinClose = document.getElementById("signin-close");
       const signinRegister = document.getElementById("signin-register");
@@ -197,6 +199,9 @@
       }
 
       signinButton.addEventListener("click", openSignin);
+      if (registerButton) {
+        registerButton.addEventListener("click", openSignin);
+      }
       signinClose.addEventListener("click", closeSignin);
       signinModal.addEventListener("click", (event) => {
         if (event.target === signinModal) {
@@ -254,7 +259,7 @@
           return;
         }
         signinVerify.disabled = true;
-        signinVerify.textContent = "Verifying...";
+        signinVerify.textContent = "Signing in...";
         try {
           const response = await fetch(AUTH_CONFIRM_URL, {
             method: "POST",
@@ -280,7 +285,7 @@
           signinStatus.textContent = error.message;
         } finally {
           signinVerify.disabled = false;
-          signinVerify.textContent = "Verify";
+          signinVerify.textContent = "Sign in";
         }
       });
 
