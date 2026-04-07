@@ -65,7 +65,7 @@
           <h3>Link Your Account</h3>
           <button class="signin-close" id="signin-close" type="button">×</button>
         </div>
-        <p class="signin-subtitle">Enter your Minecraft name, then confirm the code in game.</p>
+        <p class="signin-subtitle">Run <strong>/link</strong> in game, then paste the code below.</p>
         <label class="signin-field">
           <span>Minecraft Username</span>
           <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
@@ -78,10 +78,9 @@
           <span>Password</span>
           <input id="signin-password" class="signin-input" type="password" autocomplete="off" placeholder="Create a password" />
         </label>
-        <button class="btn btn-secondary" id="signin-send" type="button">Send Code</button>
         <button class="btn btn-secondary" id="signin-register" type="button">Register</button>
         <label class="signin-field">
-          <span>Verification Code</span>
+          <span>Link Code (from /link)</span>
           <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
         </label>
         <button class="btn btn-primary" id="signin-verify" type="button">Verify</button>
@@ -143,13 +142,11 @@
         });
       }
 
-      const AUTH_REQUEST_URL = "/skyland-auth/request";
       const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
       const AUTH_REGISTER_URL = "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
       const signinModal = document.getElementById("signin-modal");
       const signinClose = document.getElementById("signin-close");
-      const signinSend = document.getElementById("signin-send");
       const signinRegister = document.getElementById("signin-register");
       const signinVerify = document.getElementById("signin-verify");
       const signinStatus = document.getElementById("signin-status");
@@ -207,41 +204,14 @@
         }
       });
 
-      signinSend.addEventListener("click", async () => {
-        const username = signinUsername.value.trim();
-        signinStatus.textContent = "";
-        if (!username) {
-          signinStatus.textContent = "Enter your Minecraft username.";
-          return;
-        }
-        signinSend.disabled = true;
-        signinSend.textContent = "Sending...";
-        try {
-          const response = await fetch(AUTH_REQUEST_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username })
-          });
-          const data = await readJsonSafe(response);
-          if (!response.ok) {
-            throw new Error((data && data.error) || `Could not send code (HTTP ${response.status}).`);
-          }
-          signinStatus.textContent = "Code sent in-game. Check your chat.";
-        } catch (error) {
-          signinStatus.textContent = error.message;
-        } finally {
-          signinSend.disabled = false;
-          signinSend.textContent = "Send Code";
-        }
-      });
-
       signinRegister.addEventListener("click", async () => {
         const username = signinUsername.value.trim();
         const email = signinEmail.value.trim();
         const password = signinPassword.value.trim();
+        const code = signinCode.value.trim();
         signinStatus.textContent = "";
-        if (!username || !email || !password) {
-          signinStatus.textContent = "Enter username, email, and password to register.";
+        if (!username || !email || !password || !code) {
+          signinStatus.textContent = "Enter username, email, password, and your /link code.";
           return;
         }
         signinRegister.disabled = true;
@@ -250,13 +220,23 @@
           const response = await fetch(AUTH_REGISTER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, email, password })
+            body: JSON.stringify({ username, email, password, code })
           });
           const data = await readJsonSafe(response);
           if (!response.ok) {
             throw new Error((data && data.error) || `Could not register (HTTP ${response.status}).`);
           }
-          signinStatus.textContent = "Code sent in-game. Enter it below to verify.";
+          if (!data) {
+            throw new Error("Registration failed: empty response.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid,
+            authCode: data.authCode
+          }));
+          updateSigninLabel();
+          signinStatus.textContent = "Account linked!";
+          setTimeout(closeSignin, 900);
         } catch (error) {
           signinStatus.textContent = error.message;
         } finally {
@@ -290,7 +270,8 @@
           }
           localStorage.setItem("skylandAuthUser", JSON.stringify({
             username: data.username,
-            uuid: data.uuid
+            uuid: data.uuid,
+            authCode: data.authCode
           }));
           updateSigninLabel();
           signinStatus.textContent = "Account linked!";
