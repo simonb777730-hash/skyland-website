@@ -127,7 +127,7 @@
     <div class="signin-modal" id="signin-modal" aria-hidden="true">
       <div class="signin-card">
         <div class="signin-header">
-          <h3>Link Your Account</h3>
+          <h3>Sign In</h3>
           <button class="signin-close" id="signin-close" type="button">×</button>
         </div>
         <p class="signin-subtitle">Run <strong>/link</strong> in game, then paste the code below.</p>
@@ -136,20 +136,40 @@
           <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
         </label>
         <label class="signin-field">
-          <span>Email</span>
-          <input id="signin-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
-        </label>
-        <label class="signin-field">
-          <span>Password</span>
-          <input id="signin-password" class="signin-input" type="password" autocomplete="off" placeholder="Create a password" />
-        </label>
-        <button class="btn btn-secondary" id="signin-register" type="button">Register</button>
-        <label class="signin-field">
           <span>Link Code (from /link)</span>
           <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
         </label>
-        <button class="btn btn-primary" id="signin-verify" type="button">Sign in</button>
+        <button class="btn btn-primary" id="signin-submit" type="button">Sign In</button>
+        <button class="btn btn-secondary" id="signin-to-register" type="button">Register</button>
         <div class="signin-status" id="signin-status"></div>
+      </div>
+    </div>
+
+    <div class="signin-modal" id="register-modal" aria-hidden="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Register</h3>
+          <button class="signin-close" id="register-close" type="button">×</button>
+        </div>
+        <p class="signin-subtitle">Run <strong>/link</strong> in game, then paste the code below.</p>
+        <label class="signin-field">
+          <span>Minecraft Username</span>
+          <input id="register-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+        </label>
+        <label class="signin-field">
+          <span>Email</span>
+          <input id="register-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
+        </label>
+        <label class="signin-field">
+          <span>Password</span>
+          <input id="register-password" class="signin-input" type="password" autocomplete="off" placeholder="Create a password" />
+        </label>
+        <label class="signin-field">
+          <span>Link Code (from /link)</span>
+          <input id="register-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+        </label>
+        <button class="btn btn-primary" id="register-submit" type="button">Register</button>
+        <div class="signin-status" id="register-status"></div>
       </div>
     </div>
 
@@ -160,14 +180,20 @@
       const AUTH_REGISTER_URL = "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
       const signinModal = document.getElementById("signin-modal");
+      const registerModal = document.getElementById("register-modal");
       const signinClose = document.getElementById("signin-close");
-      const signinRegister = document.getElementById("signin-register");
-      const signinVerify = document.getElementById("signin-verify");
+      const registerClose = document.getElementById("register-close");
+      const signinSubmit = document.getElementById("signin-submit");
+      const signinToRegister = document.getElementById("signin-to-register");
+      const registerSubmit = document.getElementById("register-submit");
       const signinStatus = document.getElementById("signin-status");
+      const registerStatus = document.getElementById("register-status");
       const signinUsername = document.getElementById("signin-username");
-      const signinEmail = document.getElementById("signin-email");
-      const signinPassword = document.getElementById("signin-password");
       const signinCode = document.getElementById("signin-code");
+      const registerUsername = document.getElementById("register-username");
+      const registerEmail = document.getElementById("register-email");
+      const registerPassword = document.getElementById("register-password");
+      const registerCode = document.getElementById("register-code");
 
       function loadAuth() {
         const raw = localStorage.getItem("skylandAuthUser");
@@ -219,6 +245,7 @@
       }
 
       function openSignin() {
+        closeRegister();
         signinModal.classList.add("is-open");
         signinModal.setAttribute("aria-hidden", "false");
         signinStatus.textContent = "";
@@ -230,26 +257,48 @@
         signinModal.setAttribute("aria-hidden", "true");
       }
 
+      function openRegister() {
+        closeSignin();
+        registerModal.classList.add("is-open");
+        registerModal.setAttribute("aria-hidden", "false");
+        registerStatus.textContent = "";
+        registerUsername.focus();
+      }
+
+      function closeRegister() {
+        registerModal.classList.remove("is-open");
+        registerModal.setAttribute("aria-hidden", "true");
+      }
+
       signinButton.addEventListener("click", openSignin);
       signinClose.addEventListener("click", closeSignin);
+      registerClose.addEventListener("click", closeRegister);
+      if (signinToRegister) {
+        signinToRegister.addEventListener("click", openRegister);
+      }
       signinModal.addEventListener("click", (event) => {
         if (event.target === signinModal) {
           closeSignin();
         }
       });
+      registerModal.addEventListener("click", (event) => {
+        if (event.target === registerModal) {
+          closeRegister();
+        }
+      });
 
-      signinRegister.addEventListener("click", async () => {
-        const username = signinUsername.value.trim();
-        const email = signinEmail.value.trim();
-        const password = signinPassword.value.trim();
-        const code = signinCode.value.trim();
-        signinStatus.textContent = "";
+      registerSubmit.addEventListener("click", async () => {
+        const username = registerUsername.value.trim();
+        const email = registerEmail.value.trim();
+        const password = registerPassword.value.trim();
+        const code = registerCode.value.trim();
+        registerStatus.textContent = "";
         if (!username || !email || !password || !code) {
-          signinStatus.textContent = "Enter username, email, password, and your /link code.";
+          registerStatus.textContent = "Enter username, email, password, and your /link code.";
           return;
         }
-        signinRegister.disabled = true;
-        signinRegister.textContent = "Registering...";
+        registerSubmit.disabled = true;
+        registerSubmit.textContent = "Registering...";
         try {
           const response = await fetch(AUTH_REGISTER_URL, {
             method: "POST",
@@ -270,17 +319,17 @@
           }));
           updateSigninLabel();
           updateTierButtons();
-          signinStatus.textContent = "Account linked!";
-          setTimeout(closeSignin, 900);
+          registerStatus.textContent = "Account linked!";
+          setTimeout(closeRegister, 900);
         } catch (error) {
-          signinStatus.textContent = error.message;
+          registerStatus.textContent = error.message;
         } finally {
-          signinRegister.disabled = false;
-          signinRegister.textContent = "Register";
+          registerSubmit.disabled = false;
+          registerSubmit.textContent = "Register";
         }
       });
 
-      signinVerify.addEventListener("click", async () => {
+      signinSubmit.addEventListener("click", async () => {
         const username = signinUsername.value.trim();
         const code = signinCode.value.trim();
         signinStatus.textContent = "";
@@ -288,8 +337,8 @@
           signinStatus.textContent = "Enter your username and code.";
           return;
         }
-        signinVerify.disabled = true;
-        signinVerify.textContent = "Signing in...";
+        signinSubmit.disabled = true;
+        signinSubmit.textContent = "Signing in...";
         try {
           const response = await fetch(AUTH_CONFIRM_URL, {
             method: "POST",
@@ -315,8 +364,8 @@
         } catch (error) {
           signinStatus.textContent = error.message;
         } finally {
-          signinVerify.disabled = false;
-          signinVerify.textContent = "Sign in";
+          signinSubmit.disabled = false;
+          signinSubmit.textContent = "Sign In";
         }
       });
 
