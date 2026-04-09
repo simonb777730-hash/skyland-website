@@ -317,10 +317,10 @@
           });
           const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error((data && data.error) || `Sign in failed (HTTP ${response.status}).`);
+            throw new Error((data && data.error) || `Wrong email or password.`);
           }
           if (!data) {
-            throw new Error("Sign in failed: empty response.");
+            throw new Error("Wrong email or password.");
           }
           localStorage.setItem("skylandAuthUser", JSON.stringify({
             username: data.username,
@@ -342,6 +342,7 @@
     </script>
   </body>
 </html>
+
 
 
 
