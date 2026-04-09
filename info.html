@@ -120,14 +120,14 @@
           <h3>Sign In</h3>
           <button class="signin-close" id="signin-close" type="button">×</button>
         </div>
-        <p class="signin-subtitle">Run <strong>/link</strong> in game, then paste the code below.</p>
+        <p class="signin-subtitle">Sign in with the email and password you registered with.</p>
         <label class="signin-field">
-          <span>Minecraft Username</span>
-          <input id="signin-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+          <span>Email</span>
+          <input id="signin-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
         </label>
         <label class="signin-field">
-          <span>Link Code (from /link)</span>
-          <input id="signin-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+          <span>Password</span>
+          <input id="signin-password" class="signin-input" type="password" autocomplete="off" placeholder="Your password" />
         </label>
         <button class="btn btn-primary" id="signin-submit" type="button">Sign In</button>
         <button class="btn btn-secondary" id="signin-to-register" type="button">Register</button>
@@ -247,7 +247,7 @@
           statusDot.classList.add("offline");
         });
 
-      const AUTH_CONFIRM_URL = "/skyland-auth/confirm";
+      const AUTH_LOGIN_URL = "/skyland-auth/login";
       const AUTH_REGISTER_URL = "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
       const signinModal = document.getElementById("signin-modal");
@@ -259,8 +259,8 @@
       const registerSubmit = document.getElementById("register-submit");
       const signinStatus = document.getElementById("signin-status");
       const registerStatus = document.getElementById("register-status");
-      const signinUsername = document.getElementById("signin-username");
-      const signinCode = document.getElementById("signin-code");
+      const signinEmail = document.getElementById("signin-email");
+      const signinPassword = document.getElementById("signin-password");
       const registerUsername = document.getElementById("register-username");
       const registerEmail = document.getElementById("register-email");
       const registerPassword = document.getElementById("register-password");
@@ -300,7 +300,7 @@
         signinModal.classList.add("is-open");
         signinModal.setAttribute("aria-hidden", "false");
         signinStatus.textContent = "";
-        signinUsername.focus();
+        signinEmail.focus();
       }
 
       function closeSignin() {
@@ -380,27 +380,27 @@
       });
 
       signinSubmit.addEventListener("click", async () => {
-        const username = signinUsername.value.trim();
-        const code = signinCode.value.trim();
+        const email = signinEmail.value.trim();
+        const password = signinPassword.value.trim();
         signinStatus.textContent = "";
-        if (!username || !code) {
-          signinStatus.textContent = "Enter your username and code.";
+        if (!email || !password) {
+          signinStatus.textContent = "Enter your email and password.";
           return;
         }
         signinSubmit.disabled = true;
         signinSubmit.textContent = "Signing in...";
         try {
-          const response = await fetch(AUTH_CONFIRM_URL, {
+          const response = await fetch(AUTH_LOGIN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, code })
+            body: JSON.stringify({ email, password })
           });
           const data = await readJsonSafe(response);
           if (!response.ok) {
-            throw new Error((data && data.error) || `Verification failed (HTTP ${response.status}).`);
+            throw new Error((data && data.error) || `Sign in failed (HTTP ${response.status}).`);
           }
           if (!data) {
-            throw new Error("Verification failed: empty response.");
+            throw new Error("Sign in failed: empty response.");
           }
           localStorage.setItem("skylandAuthUser", JSON.stringify({
             username: data.username,
