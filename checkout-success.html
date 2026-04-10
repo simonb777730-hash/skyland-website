@@ -4,6 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Skyland Checkout Complete</title>
+    <meta name="description" content="Your Skyland tier payment was completed successfully." />
+    <meta name="theme-color" content="#0c1c3b" />
+    <link rel="canonical" href="https://mc-skyland.com/checkout-success.html" />
+    <meta property="og:title" content="Skyland Checkout Complete" />
+    <meta property="og:description" content="Your Skyland tier payment was completed successfully." />
+    <meta property="og:image" content="https://mc-skyland.com/assets/skyland-logo.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mc-skyland.com/checkout-success.html" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/png" href="assets/skyland-logo.png" />
     <link rel="apple-touch-icon" href="assets/skyland-logo.png" />
     <link rel="stylesheet" href="styles.css" />
@@ -25,6 +34,20 @@
           <a class="nav-pill" href="index.html">Home</a>
           <a class="nav-pill is-active" href="store.html">Store</a>
           <a class="nav-pill" href="info.html">Info</a>
+          <button class="nav-pill nav-signin" id="signin-button" type="button">Sign In</button>
+          <button class="nav-pill nav-register" id="register-button" type="button">Register</button>
+          <div class="account-menu is-hidden" id="account-menu">
+            <button class="nav-pill nav-account" id="account-button" type="button" aria-haspopup="true" aria-expanded="false">
+              <span id="account-label">Account ▾</span>
+            </button>
+            <div class="account-dropdown" id="account-dropdown">
+              <div class="account-row">
+                Signed in as
+                <span class="account-name" id="account-name">Unknown</span>
+              </div>
+              <button class="account-signout" id="signout-button" type="button">Sign out</button>
+            </div>
+          </div>
         </nav>
       </header>
 
@@ -56,8 +79,61 @@
           <a href="index.html">Home</a>
           <a href="store.html">Store</a>
           <a href="info.html">Info</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="refunds.html">Refunds</a>
         </div>
       </footer>
+    </div>
+
+    <div class="signin-modal" id="signin-modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Sign In</h3>
+          <button class="signin-close" id="signin-close" type="button" aria-label="Close sign in">×</button>
+        </div>
+        <p class="signin-subtitle">Sign in with the email and password you registered with.</p>
+        <label class="signin-field">
+          <span>Email</span>
+          <input id="signin-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
+        </label>
+        <label class="signin-field">
+          <span>Password</span>
+          <input id="signin-password" class="signin-input" type="password" autocomplete="off" placeholder="Your password" />
+        </label>
+        <button class="btn btn-primary" id="signin-submit" type="button">Sign In</button>
+        <button class="btn btn-secondary" id="signin-to-register" type="button">Register</button>
+        <div class="signin-status" id="signin-status"></div>
+      </div>
+    </div>
+
+    <div class="signin-modal" id="register-modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="signin-card">
+        <div class="signin-header">
+          <h3>Register</h3>
+          <button class="signin-close" id="register-close" type="button" aria-label="Close register">×</button>
+        </div>
+        <p class="signin-subtitle">Run <strong>/link</strong> in game, then paste the code below.</p>
+        <label class="signin-field">
+          <span>Minecraft Username</span>
+          <input id="register-username" class="signin-input" type="text" autocomplete="off" placeholder="Your IGN" />
+        </label>
+        <label class="signin-field">
+          <span>Email</span>
+          <input id="register-email" class="signin-input" type="email" autocomplete="off" placeholder="you@example.com" />
+        </label>
+        <label class="signin-field">
+          <span>Password</span>
+          <input id="register-password" class="signin-input" type="password" autocomplete="off" placeholder="Create a password" />
+        </label>
+        <label class="signin-field">
+          <span>Link Code (from /link)</span>
+          <input id="register-code" class="signin-input" type="text" autocomplete="off" placeholder="Enter code" />
+        </label>
+        <div class="field-hint">8 characters (A-Z / 0-9)</div>
+        <button class="btn btn-primary" id="register-submit" type="button">Register</button>
+        <div class="signin-status" id="register-status"></div>
+      </div>
     </div>
 
     <script>
@@ -65,8 +141,240 @@
       const sessionId = params.get("session_id");
       const sessionEl = document.getElementById("session-id");
       sessionEl.textContent = sessionId ? sessionId : "No session id";
+
+      const AUTH_LOGIN_URL = "/skyland-auth/login";
+      const AUTH_REGISTER_URL = "/skyland-auth/register";
+      const signinButton = document.getElementById("signin-button");
+      const registerButton = document.getElementById("register-button");
+      const accountMenu = document.getElementById("account-menu");
+      const accountButton = document.getElementById("account-button");
+      const accountDropdown = document.getElementById("account-dropdown");
+      const accountName = document.getElementById("account-name");
+      const signoutButton = document.getElementById("signout-button");
+      const signinModal = document.getElementById("signin-modal");
+      const registerModal = document.getElementById("register-modal");
+      const signinClose = document.getElementById("signin-close");
+      const registerClose = document.getElementById("register-close");
+      const signinSubmit = document.getElementById("signin-submit");
+      const signinToRegister = document.getElementById("signin-to-register");
+      const registerSubmit = document.getElementById("register-submit");
+      const signinStatus = document.getElementById("signin-status");
+      const registerStatus = document.getElementById("register-status");
+      const signinEmail = document.getElementById("signin-email");
+      const signinPassword = document.getElementById("signin-password");
+      const registerUsername = document.getElementById("register-username");
+      const registerEmail = document.getElementById("register-email");
+      const registerPassword = document.getElementById("register-password");
+      const registerCode = document.getElementById("register-code");
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+      const linkCodePattern = /^[A-Z0-9]{8}$/i;
+
+      function loadAuth() {
+        const raw = localStorage.getItem("skylandAuthUser");
+        if (!raw) {
+          return null;
+        }
+        try {
+          return JSON.parse(raw);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      async function readJsonSafe(response) {
+        try {
+          return await response.json();
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function setSignedInUi() {
+        const auth = loadAuth();
+        if (auth && auth.username) {
+          signinButton.classList.add("is-hidden");
+          registerButton.classList.add("is-hidden");
+          accountMenu.classList.remove("is-hidden");
+          accountName.textContent = auth.username;
+          document.getElementById("account-label").textContent = `${auth.username} ▾`;
+        } else {
+          signinButton.classList.remove("is-hidden");
+          registerButton.classList.remove("is-hidden");
+          accountMenu.classList.add("is-hidden");
+          accountName.textContent = "Unknown";
+          document.getElementById("account-label").textContent = "Account ▾";
+        }
+      }
+
+      function openSignin() {
+        closeRegister();
+        signinModal.classList.add("is-open");
+        signinModal.setAttribute("aria-hidden", "false");
+        const auth = loadAuth();
+        signinStatus.textContent = auth && auth.username ? `You are already signed in as ${auth.username}.` : "";
+        signinEmail.focus();
+      }
+
+      function closeSignin() {
+        signinModal.classList.remove("is-open");
+        signinModal.setAttribute("aria-hidden", "true");
+      }
+
+      function openRegister() {
+        closeSignin();
+        registerModal.classList.add("is-open");
+        registerModal.setAttribute("aria-hidden", "false");
+        const auth = loadAuth();
+        registerStatus.textContent = auth && auth.username
+          ? `You are already signed in as ${auth.username}. Registering will replace this session.`
+          : "";
+        registerUsername.focus();
+      }
+
+      function closeRegister() {
+        registerModal.classList.remove("is-open");
+        registerModal.setAttribute("aria-hidden", "true");
+      }
+
+      signinButton.addEventListener("click", openSignin);
+      registerButton.addEventListener("click", openRegister);
+      signinClose.addEventListener("click", closeSignin);
+      registerClose.addEventListener("click", closeRegister);
+      if (signinToRegister) {
+        signinToRegister.addEventListener("click", openRegister);
+      }
+      signinModal.addEventListener("click", (event) => {
+        if (event.target === signinModal) {
+          closeSignin();
+        }
+      });
+      registerModal.addEventListener("click", (event) => {
+        if (event.target === registerModal) {
+          closeRegister();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeSignin();
+          closeRegister();
+          accountDropdown.classList.remove("is-open");
+          accountButton.setAttribute("aria-expanded", "false");
+        }
+      });
+      accountButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = accountDropdown.classList.toggle("is-open");
+        accountButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+      document.addEventListener("click", () => {
+        accountDropdown.classList.remove("is-open");
+        accountButton.setAttribute("aria-expanded", "false");
+      });
+      signoutButton.addEventListener("click", () => {
+        localStorage.removeItem("skylandAuthUser");
+        accountDropdown.classList.remove("is-open");
+        accountButton.setAttribute("aria-expanded", "false");
+        setSignedInUi();
+      });
+
+      registerSubmit.addEventListener("click", async () => {
+        const username = registerUsername.value.trim();
+        const email = registerEmail.value.trim();
+        const password = registerPassword.value.trim();
+        const code = registerCode.value.trim().toUpperCase();
+        registerStatus.textContent = "";
+        if (!username || !email || !password || !code) {
+          registerStatus.textContent = "Enter username, email, password, and your /link code.";
+          return;
+        }
+        if (!emailPattern.test(email)) {
+          registerStatus.textContent = "Enter a valid email address.";
+          return;
+        }
+        if (!linkCodePattern.test(code)) {
+          registerStatus.textContent = "Link code must be 8 characters (A-Z / 0-9).";
+          return;
+        }
+        registerSubmit.disabled = true;
+        registerSubmit.textContent = "Registering...";
+        try {
+          const response = await fetch(AUTH_REGISTER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password, code })
+          });
+          const data = await readJsonSafe(response);
+          if (!response.ok) {
+            throw new Error((data && data.error) || `Could not register (HTTP ${response.status}).`);
+          }
+          if (!data) {
+            throw new Error("Registration failed: empty response.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid,
+            authCode: data.authCode
+          }));
+          setSignedInUi();
+          registerStatus.textContent = "Account linked!";
+          setTimeout(closeRegister, 900);
+        } catch (error) {
+          registerStatus.textContent = error.message;
+        } finally {
+          registerSubmit.disabled = false;
+          registerSubmit.textContent = "Register";
+        }
+      });
+
+      signinSubmit.addEventListener("click", async () => {
+        const email = signinEmail.value.trim();
+        const password = signinPassword.value.trim();
+        signinStatus.textContent = "";
+        if (!email || !password) {
+          signinStatus.textContent = "Enter your email and password.";
+          return;
+        }
+        if (!emailPattern.test(email)) {
+          signinStatus.textContent = "Enter a valid email address.";
+          return;
+        }
+        signinSubmit.disabled = true;
+        signinSubmit.textContent = "Signing in...";
+        try {
+          const response = await fetch(AUTH_LOGIN_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await readJsonSafe(response);
+          if (!response.ok) {
+            throw new Error((data && data.error) || "Wrong email or password.");
+          }
+          if (!data) {
+            throw new Error("Wrong email or password.");
+          }
+          localStorage.setItem("skylandAuthUser", JSON.stringify({
+            username: data.username,
+            uuid: data.uuid,
+            authCode: data.authCode
+          }));
+          setSignedInUi();
+          signinStatus.textContent = "Account linked!";
+          setTimeout(closeSignin, 900);
+        } catch (error) {
+          signinStatus.textContent = error.message;
+        } finally {
+          signinSubmit.disabled = false;
+          signinSubmit.textContent = "Sign In";
+        }
+      });
+
+      setSignedInUi();
     </script>
   </body>
 </html>
+
+
+
 
 

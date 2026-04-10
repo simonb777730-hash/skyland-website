@@ -106,6 +106,71 @@ main {
   cursor: pointer;
 }
 
+.nav-pill.nav-register {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.nav-pill.nav-account {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.account-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 200px;
+  background: rgba(8, 16, 32, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+  display: none;
+  z-index: 40;
+}
+
+.account-dropdown.is-open {
+  display: block;
+}
+
+.account-row {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.account-name {
+  display: block;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.account-signout {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
 .hero {
   text-align: center;
   margin-bottom: 32px;
@@ -380,6 +445,14 @@ main {
   font-size: 1rem;
 }
 
+.status-meta {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: -8px;
+  margin-bottom: 18px;
+}
+
 .dot {
   width: 10px;
   height: 10px;
@@ -613,6 +686,11 @@ main {
   outline: 2px solid rgba(55, 226, 193, 0.6);
 }
 
+.checkout-input[readonly] {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
 .checkout-actions {
   display: flex;
   gap: 12px;
@@ -713,5 +791,97 @@ main {
   margin-top: 10px;
   color: #ffd79a;
   font-size: 0.85rem;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legal {
+  text-align: center;
+  margin-bottom: 70px;
+}
+
+.legal-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 8px 0 20px;
+}
+
+.legal-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: left;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.legal-card h3 {
+  margin-top: 18px;
+  font-size: 1rem;
+}
+
+.legal-card ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.legal-card li {
+  margin-bottom: 8px;
+}
+
+.legal-card a {
+  color: #b9fff3;
+  text-decoration: none;
+}
+
+.checkout-hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.notfound {
+  text-align: center;
+  margin: 80px auto;
+}
+
+.notfound-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.notfound-card h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+}
+
+.notfound-card p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.notfound-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
