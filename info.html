@@ -244,7 +244,7 @@
         });
       }
 
-      const statusUrl = "/skyland-status.json";
+      const statusUrl = "https://status.mc-skyland.com/skyland-status.json";
       const statusDot = document.getElementById("status-dot");
       const statusValue = document.getElementById("status-value");
       const playersValue = document.getElementById("players-value");
@@ -298,6 +298,9 @@
       async function refreshStatus() {
         try {
           const response = await fetch(statusUrl, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
           const data = await response.json();
           applyStatus(data);
         } catch (error) {
