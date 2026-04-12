@@ -318,7 +318,7 @@
       setInterval(refreshStatus, 30000);
       setInterval(updateStatusMeta, 10000);
 
-                  const API_BASE = (window.location && window.location.origin && window.location.origin !== "null") ? window.location.origin : "https://mc-skyland.com";
+                  const API_BASE = "https://status.mc-skyland.com";
       const AUTH_LOGIN_URL = API_BASE + "/skyland-auth/login";
       const AUTH_REGISTER_URL = API_BASE + "/skyland-auth/register";
       const signinButton = document.getElementById("signin-button");
@@ -550,6 +550,7 @@
     </script>
   </body>
 </html>
+
 
 
 
