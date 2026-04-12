@@ -154,13 +154,7 @@
     </div>
 
     <script>
-            const API_BASE = (() => {
-        const host = window.location.hostname;
-        if (host === "mc-skyland.com" || host === "www.mc-skyland.com" || host === "status.mc-skyland.com") {
-          return "https://status.mc-skyland.com";
-        }
-        return "";
-      })();
+                  const API_BASE = (window.location && window.location.origin && window.location.origin !== "null") ? window.location.origin : "https://mc-skyland.com";
       const CHECKOUT_URL = API_BASE + "/skyland-checkout";
       const tiers = {
         t2: { name: "Uncommon Tier", price: "$1 / month" },
@@ -488,6 +482,8 @@
     </script>
   </body>
 </html>
+
+
 
 
 
