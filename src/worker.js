@@ -12,9 +12,11 @@ export default {
 
     if (isApiPath(url.pathname)) {
       const apiUrl = new URL(url.pathname + url.search, API_ORIGIN);
+      const headers = new Headers(request.headers);
+      headers.set("Host", "status.mc-skyland.com");
       const apiRequest = new Request(apiUrl.toString(), {
         method: request.method,
-        headers: request.headers,
+        headers,
         body: request.body,
       });
       return fetch(apiRequest);
