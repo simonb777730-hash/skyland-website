@@ -13,7 +13,8 @@ export default {
     if (isApiPath(url.pathname)) {
       const apiUrl = new URL(url.pathname + url.search, API_ORIGIN);
       const headers = new Headers();
-      headers.set("Content-Type", request.headers.get("Content-Type") || "application/json");
+      const ct = request.headers.get("Content-Type");
+      if (ct) headers.set("Content-Type", ct);
       const accept = request.headers.get("Accept");
       if (accept) headers.set("Accept", accept);
       return fetch(apiUrl.toString(), {
