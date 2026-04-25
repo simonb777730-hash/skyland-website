@@ -12,14 +12,16 @@ export default {
 
     if (isApiPath(url.pathname)) {
       const apiUrl = new URL(url.pathname + url.search, API_ORIGIN);
-      const headers = new Headers(request.headers);
-      headers.set("Host", "status.mc-skyland.com");
-      const apiRequest = new Request(apiUrl.toString(), {
+      const headers = new Headers();
+      const ct = request.headers.get("Content-Type");
+      if (ct) headers.set("Content-Type", ct);
+      const accept = request.headers.get("Accept");
+      if (accept) headers.set("Accept", accept);
+      return fetch(apiUrl.toString(), {
         method: request.method,
         headers,
         body: request.body,
       });
-      return fetch(apiRequest);
     }
 
     return env.ASSETS.fetch(request);
